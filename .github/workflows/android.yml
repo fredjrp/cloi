@@ -1,4 +1,4 @@
-﻿name: Build Android APK
+name: Build Android APK
 
 # Builds and signs the CloiDm APK on GitHub's runners so a slow local machine is
 # never in the path. Runs on demand, and on any push that touches the app.
@@ -44,8 +44,18 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+      # The ubuntu-latest image already ships a working Android SDK with
+      # ANDROID_HOME set. android-actions/setup-android tries to "repair" it by
+      # downloading new cmdline-tools, which is slow and has been failing on a
+      # preinstalled-sdkmanager version mismatch. We only need to confirm it is there.
+      - name: Verify Android SDK
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+          test -d "$ANDROID_HOME" || { echo "::error::No Android SDK on this runner"; exit 1; }
+          ls "$ANDROID_HOME" | head -10
+          echo "build-tools:"; ls "$ANDROID_HOME/build-tools" 2>/dev/null || echo "  (none yet - gradle will fetch)"
+          echo "platforms:";   ls "$ANDROID_HOME/platforms" 2>/dev/null || echo "  (none yet - gradle will fetch)"
 
       - name: Install dependencies
         run: npm ci
