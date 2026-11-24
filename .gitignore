@@ -9,3 +9,5 @@ ios/
 .DS_Store
 cloidm-release.keystore
 keystore.properties
+
+_apk/
