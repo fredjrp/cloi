@@ -1,0 +1,11 @@
+﻿node_modules/
+dist/
+android/
+ios/
+.aistudio/
+.env
+.env.local
+*.log
+.DS_Store
+cloidm-release.keystore
+keystore.properties

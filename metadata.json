@@ -1,0 +1,6 @@
+{
+  "name": "GateFlow — IG Comment-to-DM & Follow-Gate Client",
+  "description": "Apple-HIG calibrated UI/UX architecture and interactive .exe & .apk client prototype for Instagram Comment-to-DM automation, Follow-Gate growth, email capture, and client retention analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
