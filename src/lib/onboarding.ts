@@ -5,6 +5,8 @@
  * signs out must NOT be walked through the pitch again - that is friction with no
  * benefit. The flag lives beside the token so both clear together on uninstall.
  */
+import { withTimeout } from './timeout';
+
 const SEEN_WELCOME = 'cloidm.welcome.v1';
 
 const isNative = (): boolean =>
@@ -24,6 +26,10 @@ async function prefs() {
 }
 
 export async function hasSeenWelcome(): Promise<boolean> {
+  return withTimeout(hasSeenWelcomeRaw(), false);
+}
+
+async function hasSeenWelcomeRaw(): Promise<boolean> {
   const P = isNative() ? await prefs() : null;
   if (P) {
     try {

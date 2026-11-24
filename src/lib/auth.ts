@@ -9,6 +9,8 @@
  * bearer header is simpler to reason about than a session.
  */
 
+import { withTimeout } from './timeout';
+
 const KEY = 'cloidm.token.v1';
 const EMAIL_KEY = 'cloidm.email.v1';
 
@@ -40,6 +42,11 @@ export async function setToken(token: string, email?: string): Promise<void> {
 }
 
 export async function getToken(): Promise<string | null> {
+  // A native bridge that never answers must not hang the boot.
+  return withTimeout(getTokenRaw(), null);
+}
+
+async function getTokenRaw(): Promise<string | null> {
   const P = isNative() ? await prefs() : null;
   if (P) {
     try {
@@ -53,6 +60,10 @@ export async function getToken(): Promise<string | null> {
 }
 
 export async function getEmail(): Promise<string | null> {
+  return withTimeout(getEmailRaw(), null);
+}
+
+async function getEmailRaw(): Promise<string | null> {
   const P = isNative() ? await prefs() : null;
   if (P) {
     try {

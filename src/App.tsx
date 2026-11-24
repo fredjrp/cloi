@@ -20,7 +20,8 @@ import type { AutomationRule, NavView, RuleDraft } from './types/automation';
 type Phase = 'checking' | 'welcome' | 'signin' | 'connect' | 'ready';
 
 export default function App() {
-  const [phase, setPhase] = useState<Phase>('checking');
+  // Start on a real screen, never on a spinner. The boot redirects from here.
+  const [phase, setPhase] = useState<Phase>('welcome');
   const [email, setEmail] = useState('');
   const [notice, setNotice] = useState('');
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
@@ -43,6 +44,14 @@ export default function App() {
     // sat on its spinner forever with a white screen and no error. A hang with no
     // message is the worst possible failure: the user cannot even tell you what
     // broke. This version always resolves, and surfaces the reason if it can.
+    // HARD CEILING. Whatever happens below, the app must leave 'checking' within
+    // 2.5s. A spinner that can run forever is a bug report with no information in
+    // it - this guarantees the screen changes even if a native call never returns.
+    const ceiling = window.setTimeout(() => {
+      setBootError('startup timed out, continuing');
+      setPhase((p) => (p === 'checking' ? 'welcome' : p));
+    }, 2500);
+
     (async () => {
       try {
         if (await isSignedIn()) {
@@ -50,6 +59,7 @@ export default function App() {
           try {
             const me = await api.me();
             setPhase(me.connected ? 'ready' : 'connect');
+            window.clearTimeout(ceiling);
           } catch (err) {
             if (err instanceof ApiError && err.status === 401) {
               await clearToken();
@@ -58,14 +68,17 @@ export default function App() {
               // Server unreachable is not a reason to block the app.
               setPhase('connect');
             }
+            window.clearTimeout(ceiling);
           }
           return;
         }
         setPhase((await hasSeenWelcome()) ? 'signin' : 'welcome');
+        window.clearTimeout(ceiling);
       } catch (err) {
         // Storage or bootstrap failed. A first-time user still gets the walkthrough;
         // a returning one can still sign in. Never leave them on a spinner.
         setBootError(err instanceof Error ? err.message : String(err));
+        window.clearTimeout(ceiling);
         setPhase('welcome');
       }
     })();
