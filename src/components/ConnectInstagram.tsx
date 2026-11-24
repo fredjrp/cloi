@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { api, ApiError, type Account } from '../lib/api';
 import { API_BASE } from '../lib/api';
 import { track } from '../lib/analytics';
+import { getWorkspace } from '../lib/auth';
 
 /**
  * Instagram connection screen.
@@ -54,14 +55,33 @@ export function ConnectInstagram({ onConnected, onSkip }: ConnectInstagramProps)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const connectInBrowser = () => {
+  const connectInBrowser = async () => {
     track('connect.start', 'connect');
-    const url = `${API_BASE}/social-accounts/connect/instagram_login/`;
-    window.open(url, '_system');
+
+    // The connect page needs the workspace in the path:
+    //   /social-accounts/<workspace_id>/connect/
+    // The previous URL omitted it and 404'd, which is why the button appeared dead.
+    const ws = await getWorkspace();
+    if (!ws) {
+      setError('Your session is missing a workspace. Please sign in again.');
+      return;
+    }
+    const url = `${API_BASE}/social-accounts/${ws}/connect/`;
+
+    // A plain window.open on a Capacitor WebView often does nothing. @capacitor/browser
+    // opens the real system browser, which is also required for Meta's OAuth flow.
+    try {
+      const { Browser } = await import('@capacitor/browser');
+      await Browser.open({ url });
+      return;
+    } catch {
+      /* plugin unavailable (web preview) - fall through */
+    }
+    window.open(url, '_blank', 'noopener');
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F5F7] px-6 py-10">
+    <div className="h-[100dvh] overflow-y-auto bg-[#F5F5F7] px-6" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 40px)', paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 40px)' }}>
       <div className="mx-auto w-full max-w-sm">
         <div className="mb-6 text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#F58529] via-[#DD2A7B] to-[#8134AF] shadow-sm">

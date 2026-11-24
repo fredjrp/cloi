@@ -1,7 +1,7 @@
 import { ArrowRight, Loader2, Lock, Mail, User } from 'lucide-react';
 import { useState } from 'react';
 import { api, ApiError } from '../lib/api';
-import { setToken } from '../lib/auth';
+import { setToken, setWorkspace } from '../lib/auth';
 import { track } from '../lib/analytics';
 
 /**
@@ -42,6 +42,7 @@ export function LoginScreen({ initialMode = 'signin', onSignedIn }: LoginScreenP
         ? await api.signup(email.trim(), password, name.trim())
         : await api.login(email.trim(), password);
       await setToken(result.token, result.email);
+      await setWorkspace(result.workspace_id);
       track('auth.success', 'auth', { mode });
       onSignedIn();
     } catch (err) {
@@ -65,8 +66,8 @@ export function LoginScreen({ initialMode = 'signin', onSignedIn }: LoginScreenP
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F5F7] flex flex-col">
-      <header className="px-6 pt-10 pb-2 text-center">
+    <div className="flex h-[100dvh] flex-col bg-[#F5F5F7]">
+      <header className="shrink-0 px-6 pb-2 text-center" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 36px)' }}>
         <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#1D1D1F] shadow-sm">
           <span className="font-display text-2xl font-bold text-white">C</span>
         </div>
@@ -80,7 +81,7 @@ export function LoginScreen({ initialMode = 'signin', onSignedIn }: LoginScreenP
         </p>
       </header>
 
-      <main className="flex-1 px-6 pb-10">
+      <main className="flex-1 overflow-y-auto px-6" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 28px)' }}>
         <form
           onSubmit={submit}
           className="mx-auto mt-6 w-full max-w-sm rounded-2xl border border-[#E5E5EA] bg-white p-6 shadow-sm"

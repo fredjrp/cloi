@@ -8,6 +8,7 @@ import { FeedbackScreen } from './components/FeedbackScreen';
 import { LoginScreen } from './components/LoginScreen';
 import { MetricsDashboard } from './components/MetricsDashboard';
 import { MobileApkPreview } from './components/MobileApkPreview';
+import { MobileOnboarding } from './components/MobileOnboarding';
 import { OnboardingWizard } from './components/OnboardingWizard';
 import { TopBar } from './components/TopBar';
 import { api, ApiError } from './lib/api';
@@ -228,39 +229,24 @@ export default function App() {
   if (phase === 'welcome') {
     track('welcome.view', 'welcome');
     return (
-      <div className="min-h-screen bg-[#F5F5F7]">
-        <OnboardingWizard
-          account={{ ...account, connected: false, igHandle: '' }}
-          posts={[]}
-          onToggleMetaConnection={() => {}}
-          onCompleteOnboarding={() => {}}
-          onCancelToOverview={() => {}}
-          onRequestAuth={async () => {
-            track('welcome.complete', 'welcome');
-            await markWelcomeSeen();
-            setAuthMode('signup');
-            setPhase('signin');
-          }}
-        />
-        <div className="pb-10 text-center">
-          <button
-            type="button"
-            onClick={async () => {
-              track('welcome.complete', 'welcome', { skipped: true });
-              await markWelcomeSeen();
-              setAuthMode('signin');
-              setPhase('signin');
-            }}
-            className="text-xs text-[#6E6E73] underline underline-offset-2"
-          >
-            I already have an account
-          </button>
-        </div>
-      </div>
+      <MobileOnboarding
+        onStartSignup={async () => {
+          track('welcome.complete', 'welcome');
+          await markWelcomeSeen();
+          setAuthMode('signup');
+          setPhase('signin');
+        }}
+        onSignIn={async () => {
+          track('welcome.complete', 'welcome', { skipped: true });
+          await markWelcomeSeen();
+          setAuthMode('signin');
+          setPhase('signin');
+        }}
+      />
     );
   }
 
-  if (phase === 'signin') {
+    if (phase === 'signin') {
     return (
       <LoginScreen
         initialMode={authMode}
@@ -283,7 +269,7 @@ export default function App() {
 
   // ---- the app ----------------------------------------------------------
   return (
-    <div className="min-h-screen flex flex-col bg-[#F5F5F7] text-[#1D1D1F]">
+    <div className="flex h-[100dvh] flex-col bg-[#F5F5F7] text-[#1D1D1F]">
       <TopBar activeView={activeView} onSelectView={setActiveView} />
 
       {notice && (
@@ -302,7 +288,7 @@ export default function App() {
         </div>
       )}
 
-      <main className="flex-1 w-full max-w-[1360px] mx-auto px-4 sm:px-6 py-5 sm:py-6">
+      <main className="flex-1 w-full overflow-y-auto overscroll-contain px-4 pb-6">
         {data.loading ? (
           <div className="flex items-center justify-center py-24">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#E5E5EA] border-t-[#0071E3]" />

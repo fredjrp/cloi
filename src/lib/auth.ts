@@ -13,6 +13,7 @@ import { withTimeout } from './timeout';
 
 const KEY = 'cloidm.token.v1';
 const EMAIL_KEY = 'cloidm.email.v1';
+const WORKSPACE_KEY = 'cloidm.workspace.v1';
 
 const isNative = (): boolean =>
   typeof window !== 'undefined' && !!(window as any).Capacitor?.isNativePlatform?.();
@@ -84,4 +85,25 @@ export async function clearToken(): Promise<void> {
 
 export async function isSignedIn(): Promise<boolean> {
   return !!(await getToken());
+}
+
+
+/** The workspace id the connect page needs in its URL path. */
+export async function setWorkspace(id: string): Promise<void> {
+  const P = isNative() ? await prefs() : null;
+  if (P) {
+    try { await P.set({ key: WORKSPACE_KEY, value: id }); return; } catch { /* fall through */ }
+  }
+  try { localStorage.setItem(WORKSPACE_KEY, id); } catch { /* ignore */ }
+}
+
+export async function getWorkspace(): Promise<string | null> {
+  const P = isNative() ? await prefs() : null;
+  if (P) {
+    try {
+      const { value } = await P.get({ key: WORKSPACE_KEY });
+      if (value) return value;
+    } catch { /* fall through */ }
+  }
+  try { return localStorage.getItem(WORKSPACE_KEY); } catch { return null; }
 }
