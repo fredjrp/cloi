@@ -6,6 +6,10 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
+    // Relative asset paths. Capacitor loads the bundle from its own origin, and
+    // absolute /assets/... paths are a well-known cause of a white screen in a
+    // packaged WebView.
+    base: './',
     plugins: [
       react(),
       tailwindcss(),

@@ -26,6 +26,7 @@ export default function App() {
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
   const [showFeedback, setShowFeedback] = useState(false);
   const [showChurn, setShowChurn] = useState(false);
+  const [bootError, setBootError] = useState('');
 
   const [activeView, setActiveView] = useState<NavView>('overview');
   const [selectedRuleId, setSelectedRuleId] = useState<string | null>(null);
@@ -35,27 +36,38 @@ export default function App() {
 
   // ---- boot: is there a usable token? -----------------------------------
   useEffect(() => {
+    // The boot must ALWAYS end in a usable phase.
+    //
+    // The first APK shipped with a boot that could reject - a dynamic import of a
+    // native plugin that was not registered - and because nothing caught it the app
+    // sat on its spinner forever with a white screen and no error. A hang with no
+    // message is the worst possible failure: the user cannot even tell you what
+    // broke. This version always resolves, and surfaces the reason if it can.
     (async () => {
-      // A returning user with a valid token goes straight in - no pitch, no friction.
-      if (await isSignedIn()) {
-        setEmail((await getEmail()) ?? '');
-        try {
-          const me = await api.me();
-          setPhase(me.connected ? 'ready' : 'connect');
-        } catch (err) {
-          if (err instanceof ApiError && err.status === 401) {
-            await clearToken();
-            setPhase('signin');
-          } else {
-            setPhase('connect');
+      try {
+        if (await isSignedIn()) {
+          setEmail((await getEmail()) ?? '');
+          try {
+            const me = await api.me();
+            setPhase(me.connected ? 'ready' : 'connect');
+          } catch (err) {
+            if (err instanceof ApiError && err.status === 401) {
+              await clearToken();
+              setPhase('signin');
+            } else {
+              // Server unreachable is not a reason to block the app.
+              setPhase('connect');
+            }
           }
+          return;
         }
-        return;
+        setPhase((await hasSeenWelcome()) ? 'signin' : 'welcome');
+      } catch (err) {
+        // Storage or bootstrap failed. A first-time user still gets the walkthrough;
+        // a returning one can still sign in. Never leave them on a spinner.
+        setBootError(err instanceof Error ? err.message : String(err));
+        setPhase('welcome');
       }
-
-      // No token. If this device has never seen the introduction, explain the
-      // value before asking for a password. Otherwise go straight to sign-in.
-      setPhase((await hasSeenWelcome()) ? 'signin' : 'welcome');
     })();
   }, []);
 
@@ -188,8 +200,11 @@ export default function App() {
   // ---- gates ------------------------------------------------------------
   if (phase === 'checking') {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#F5F5F7]">
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[#F5F5F7] px-6">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#E5E5EA] border-t-[#0071E3]" />
+        {bootError && (
+          <p className="max-w-xs text-center text-xs text-[#6E6E73]">{bootError}</p>
+        )}
       </div>
     );
   }

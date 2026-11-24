@@ -11,24 +11,33 @@ const isNative = (): boolean =>
   typeof window !== 'undefined' && !!(window as any).Capacitor?.isNativePlatform?.();
 
 async function prefs() {
-  const { Preferences } = await import('@capacitor/preferences');
-  return Preferences;
+  try {
+    const { Preferences } = await import('@capacitor/preferences');
+    return Preferences;
+  } catch {
+    // The native plugin can be absent if `cap sync` did not register it. Returning
+    // null makes every caller fall back to localStorage instead of rejecting -
+    // a rejected dynamic import here was leaving the app on its boot spinner
+    // forever with no error on screen.
+    return null;
+  }
 }
 
 export async function hasSeenWelcome(): Promise<boolean> {
-  if (isNative()) {
-    const P = await prefs();
-    const { value } = await P.get({ key: SEEN_WELCOME });
-    return value === '1';
+  const P = isNative() ? await prefs() : null;
+  if (P) {
+    try {
+      const { value } = await P.get({ key: SEEN_WELCOME });
+      return value === '1';
+    } catch { /* fall through */ }
   }
-  return localStorage.getItem(SEEN_WELCOME) === '1';
+  try { return localStorage.getItem(SEEN_WELCOME) === '1'; } catch { return false; }
 }
 
 export async function markWelcomeSeen(): Promise<void> {
-  if (isNative()) {
-    const P = await prefs();
-    await P.set({ key: SEEN_WELCOME, value: '1' });
-    return;
+  const P = isNative() ? await prefs() : null;
+  if (P) {
+    try { await P.set({ key: SEEN_WELCOME, value: '1' }); return; } catch { /* fall through */ }
   }
-  localStorage.setItem(SEEN_WELCOME, '1');
+  try { localStorage.setItem(SEEN_WELCOME, '1'); } catch { /* ignore */ }
 }

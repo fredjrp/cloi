@@ -23,9 +23,13 @@ const isNative = (): boolean =>
 
 async function read(key: string): Promise<string | null> {
   if (isNative()) {
-    const { Preferences } = await import('@capacitor/preferences');
-    const { value } = await Preferences.get({ key });
-    return value ?? null;
+    try {
+      const { Preferences } = await import('@capacitor/preferences');
+      const { value } = await Preferences.get({ key });
+      return value ?? null;
+    } catch {
+      /* plugin missing - fall back below */
+    }
   }
   try {
     return localStorage.getItem(key);
@@ -36,9 +40,13 @@ async function read(key: string): Promise<string | null> {
 
 async function write(key: string, value: string): Promise<void> {
   if (isNative()) {
-    const { Preferences } = await import('@capacitor/preferences');
-    await Preferences.set({ key, value });
-    return;
+    try {
+      const { Preferences } = await import('@capacitor/preferences');
+      await Preferences.set({ key, value });
+      return;
+    } catch {
+      /* plugin missing - fall back below */
+    }
   }
   try {
     localStorage.setItem(key, value);
