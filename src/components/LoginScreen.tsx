@@ -34,6 +34,13 @@ export function LoginScreen({ initialMode = 'signin', onSignedIn }: LoginScreenP
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (busy) return;
+
+    // Tell the user what is missing rather than leaving the button inert.
+    if (!email.trim()) { setError('Enter your email address.'); return; }
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) { setError('That email address does not look right.'); return; }
+    if (!password) { setError('Enter a password.'); return; }
+    if (isSignup && password.length < 8) { setError('Use at least 8 characters for your password.'); return; }
+
     setError('');
     setBusy(true);
     track('auth.start', 'auth', { mode });
@@ -184,7 +191,7 @@ export function LoginScreen({ initialMode = 'signin', onSignedIn }: LoginScreenP
 
           <button
             type="submit"
-            disabled={busy || !email || password.length < (isSignup ? 8 : 1)}
+            disabled={busy}
             className="flex w-full min-h-[44px] items-center justify-center gap-2 rounded-xl bg-[#0071E3] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0062C4] disabled:cursor-not-allowed disabled:opacity-50"
           >
             {busy ? (

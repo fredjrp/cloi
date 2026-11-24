@@ -228,10 +228,10 @@ export function IPhoneIgMockup({
       <div className="flex justify-center">
         <div
           data-testid="iphone-ig-mockup"
-          className="relative w-full max-w-[336px] rounded-[50px] p-[9px] bg-gradient-to-b from-[#3A3A3E] via-[#1E1E21] to-[#2C2C30] ring-1 ring-black/30 shadow-[0_24px_48px_-12px_rgba(0,0,0,0.28)]"
+          className="relative w-full max-w-none rounded-none p-0 bg-transparent ring-0 shadow-none sm:max-w-[336px] sm:rounded-[50px] sm:p-[9px] sm:bg-gradient-to-b sm:from-[#3A3A3E] sm:via-[#1E1E21] sm:to-[#2C2C30] sm:ring-1 sm:ring-black/30 sm:shadow-[0_24px_48px_-12px_rgba(0,0,0,0.28)]"
         >
           {/* Inner glossy bezel lip */}
-          <div className="rounded-[42px] p-[2px] bg-[#0A0A0B] ring-1 ring-white/10">
+          <div className="rounded-none p-0 bg-transparent ring-0 sm:rounded-[42px] sm:p-[2px] sm:bg-[#0A0A0B] sm:ring-1 sm:ring-white/10">
             {/* Hardware Side Buttons */}
             <div className="hidden sm:block absolute -left-[2.5px] top-24 w-[2.5px] h-6 bg-[#48484D] rounded-l-sm" aria-hidden="true" />
             <div className="hidden sm:block absolute -left-[2.5px] top-34 w-[2.5px] h-10 bg-[#48484D] rounded-l-sm" aria-hidden="true" />
@@ -240,7 +240,7 @@ export function IPhoneIgMockup({
 
             {/* iPhone Display */}
             <div
-              className={`relative rounded-[40px] overflow-hidden flex flex-col h-[596px] ${
+              className={`relative rounded-none sm:rounded-[40px] overflow-hidden flex flex-col h-full min-h-[560px] ${
                 isDarkScreen ? 'bg-black text-white' : 'bg-white text-[#1D1D1F]'
               }`}
             >
@@ -254,7 +254,7 @@ export function IPhoneIgMockup({
               >
                 <span className="font-mono-tabular tracking-tight w-10">9:41</span>
                 <div
-                  className="w-[92px] h-[24px] bg-black rounded-full flex items-center justify-between px-2.5 ring-1 ring-white/10"
+                  className="hidden sm:flex w-[92px] h-[24px] bg-black rounded-full items-center justify-between px-2.5 ring-1 ring-white/10"
                   aria-hidden="true"
                 >
                   <span className="w-6 h-1 rounded-full bg-[#1C1C20]" />

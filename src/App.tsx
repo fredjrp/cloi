@@ -226,23 +226,49 @@ export default function App() {
   // New user: the walkthrough that already exists - the simulated phone showing
   // comment -> DM -> follow gate -> form - runs BEFORE sign-up so the value lands
   // before anything is asked for.
+  // The walkthrough with the video and the Instagram-look simulation is the
+  // onboarding. It is full-bleed on a phone (the frame hides itself), so the user
+  // is inside the experience rather than looking at a phone inside their phone.
   if (phase === 'welcome') {
     track('welcome.view', 'welcome');
     return (
-      <MobileOnboarding
-        onStartSignup={async () => {
-          track('welcome.complete', 'welcome');
-          await markWelcomeSeen();
-          setAuthMode('signup');
-          setPhase('signin');
-        }}
-        onSignIn={async () => {
-          track('welcome.complete', 'welcome', { skipped: true });
-          await markWelcomeSeen();
-          setAuthMode('signin');
-          setPhase('signin');
-        }}
-      />
+      <div className="flex h-[100dvh] flex-col bg-[#F5F5F7]">
+        <div className="flex-1 overflow-y-auto overscroll-contain">
+          <OnboardingWizard
+            account={{ ...account, connected: false, igHandle: '' }}
+            posts={[]}
+            onToggleMetaConnection={() => {}}
+            onCompleteOnboarding={() => {}}
+            onCancelToOverview={() => {}}
+            onRequestAuth={() => {
+              // Never await storage before navigating: a plugin call that never
+              // answers is exactly what made this button feel dead. Paint first,
+              // persist in the background.
+              void markWelcomeSeen();
+              track('welcome.complete', 'welcome');
+              setAuthMode('signup');
+              setPhase('signin');
+            }}
+          />
+        </div>
+        <div
+          className="shrink-0 border-t border-[#E5E5EA] bg-[#F5F5F7]/95 px-5 pt-3 backdrop-blur"
+          style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 14px)' }}
+        >
+          <button
+            type="button"
+            onClick={() => {
+              void markWelcomeSeen();
+              track('welcome.complete', 'welcome', { skipped: true });
+              setAuthMode('signin');
+              setPhase('signin');
+            }}
+            className="w-full min-h-[46px] rounded-xl text-[14px] font-medium text-[#1D1D1F] active:bg-[#E5E5EA]"
+          >
+            I already have an account
+          </button>
+        </div>
+      </div>
     );
   }
 
