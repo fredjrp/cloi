@@ -1,0 +1,20 @@
+﻿{
+  "appId": "online.cloidm.app",
+  "appName": "CloiDm",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 600,
+      "backgroundColor": "#F5F5F7",
+      "showSpinner": false
+    }
+  }
+}
